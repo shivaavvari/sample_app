@@ -1,41 +1,38 @@
-pipeline {
-    agent any
+    pipeline {
+        agent any 
 
-    environment {
-        // Replace 'dockerhub-credentials-id' with the ID of your Docker Hub credentials in Jenkins
-        DOCKERHUB_CREDENTIALS = credentials('41b7759f-dc7c-41cf-a965-1880286f75fb') 
-        DOCKER_IMAGE_NAME = 'shivaavvari/flaskapp' // e.g., 'myuser/my-app'
-        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}" // Or use a specific version, e.g., '1.0.0'
-    }
-
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/shivaavvari/sample_app.git' // Replace with your Git repository URL
-            }
+        environment {
+            DOCKER_IMAGE = "shivaavvari/flaskapp2"
+            DOCKER_CREDENTIAL_ID = "4d041999-2846-4a23-89b7-5f3e58abf6ca" // ID of your Docker Hub credentials in Jenkins
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
+        stages {
+            stage('Checkout Code') {
+                steps {
+                    git url: 'https://github.com/shivaavvari/sample_app.git', branch: 'main' // Replace with your repo URL and branch
                 }
             }
-        }
 
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    // Login to Docker Hub using stored credentials
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-                    
-                    // Push the Docker image
-                    sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                    
-                    // Logout from Docker Hub (optional, but good practice)
-                    sh "docker logout"
+            stage('Build Docker Image') {
+                steps {
+                    script {
+                        sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                        sh "docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
+                    }
+                }
+            }
+
+            stage('Push to Docker Hub') {
+                steps {
+                    script {
+                        withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIAL_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                            sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                            sh "docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                            sh "docker push ${DOCKER_IMAGE}:latest"
+                            sh "docker logout" // Optional: Logout for security
+                        }
+                    }
                 }
             }
         }
     }
-}
