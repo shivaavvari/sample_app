@@ -28,9 +28,8 @@
                             
     
                         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIAL_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                            sh 'echo "Username: ${DOCKER_USERNAME}"'
-                            sh 'echo "Password: ${DOCKER_PASSWORD}"' // The password will be masked in logs      
-                            sh " docker login -u Username -p Password"
+                
+                            sh " docker login -u Username --password-stdin Password"
                             sh " docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
                             sh " docker push ${DOCKER_IMAGE}:latest"
                             sh " docker logout" // Optional: Logout for security
