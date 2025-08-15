@@ -16,8 +16,8 @@
             stage('Build Docker Image') {
                 steps {
                     script {
-                        sh "sudo docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
-                        sh "sudo docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
+                        sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                        sh "docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
                     }
                 }
             }
@@ -26,10 +26,10 @@
                 steps {
                     script {
                         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIAL_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                            sh "sudo docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                            sh "sudo docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
-                            sh "sudo docker push ${DOCKER_IMAGE}:latest"
-                            sh "sudo docker logout" // Optional: Logout for security
+                            sh " docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                            sh " docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                            sh " docker push ${DOCKER_IMAGE}:latest"
+                            sh " docker logout" // Optional: Logout for security
                         }
                     }
                 }
